@@ -1,0 +1,95 @@
+{% extends "import.html" %}
+{% block content %}
+<style>
+    body {
+        background-image: url('https://i.pinimg.com/736x/92/0c/cd/920ccd6701c9236ce1e106cab2246286.jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    h2 {
+        font-family: 'Algerian', sans-serif;
+        font-size: 2.5cm;
+    }
+
+    #result-box {
+        margin-top: 20px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        width: 60%;
+        border-radius: 10px;
+        display: none;
+    }
+
+    pre {
+        text-align: left;
+        white-space: pre-wrap;
+        font-size: 18px;
+    }
+</style>
+
+<center>
+    <br><h2>Leaf Monitoring System</h2><br>
+
+    <form id="upload-file" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" class="btn btn-success" id="imageUpload" accept=".png, .jpg, .jpeg">
+    </form>
+
+    <div class="image-section" style="display:none;">
+        <img id="imagePreview" class="img-responsive" src="#" style="width:300px;height:300px;" /><br><br>
+        <div>
+            <button type="button" class="btn btn-info btn-lg" id="btn-predict">Predict!</button>
+        </div>
+    </div>
+
+    <div class="loader" style="display:none;">Loading...</div>
+
+    <!-- Result Display Box -->
+    <div id="result-box">
+        <h3><strong>Prediction</strong></h3>
+        <pre id="result"></pre>
+    </div>
+
+</center><br><br>
+
+<script>
+    // Show image preview
+    document.getElementById("imageUpload").onchange = function (event) {
+        let imgSection = document.querySelector(".image-section");
+        imgSection.style.display = "block";
+
+        let reader = new FileReader();
+        reader.onload = function () {
+            let output = document.getElementById("imagePreview");
+            output.src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    };
+
+    // Handle Predict button click
+    document.getElementById("btn-predict").onclick = function () {
+        let formData = new FormData(document.getElementById("upload-file"));
+
+        document.querySelector(".loader").style.display = "block";
+
+        fetch("/predict", {
+            method: "POST",
+            body: formData
+        })
+            .then(response => response.text())
+            .then(data => {
+                document.querySelector(".loader").style.display = "none";
+
+                let resultBox = document.getElementById("result-box");
+                resultBox.style.display = "block";
+
+                // Display result on new line
+                document.getElementById("result").innerText = "\n" + data;
+            })
+            .catch(err => {
+                document.getElementById("result").innerText = "Error: " + err;
+            });
+    };
+</script>
+
+{% endblock %}
